@@ -1,3 +1,6 @@
+from bot.keep_alive import keep_alive
+keep_alive()
+
 import nest_asyncio
 nest_asyncio.apply()
 
@@ -15,7 +18,7 @@ TOKEN = os.getenv("Knox_ROSY")
 FRIEND_USER_ID = 1320050068467748936
 
 # Choose what the bot should do: "check" or "send" or "delete"
-MODE = "delete"
+MODE = "check"
 
 intents = discord.Intents.default()
 intents.message_content = True
