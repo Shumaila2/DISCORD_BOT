@@ -1,6 +1,3 @@
-from keep_alive import keep_alive
-keep_alive()
-
 import nest_asyncio
 nest_asyncio.apply()
 
@@ -15,7 +12,7 @@ import traceback
 load_dotenv()
 
 TOKEN = os.getenv("Knox_Drayke")
-FRIEND_USER_ID = 1320050068467748936
+FRIEND_USER_ID = 1029977851463745577
 
 # Choose what the bot should do: "check" or "send" or "delete"
 MODE = "check"
@@ -50,8 +47,8 @@ media_messages = safe_load_json(os.path.join(base_path, "media_msg.json"))
 async def check_dms():
     try:
         user = await client.fetch_user(FRIEND_USER_ID)
-        test_msg = await user.send("🧪 Test message to check if DMs are open (will delete in 5 seconds)...")
-        await asyncio.sleep(5)
+        test_msg = await user.send("🧪 Test message to check if DMs are open (will delete in 7 seconds)...")
+        await asyncio.sleep(7)
         await test_msg.delete()
         print("✅ DMs are OPEN! You can send the birthday messages later.")
     except discord.Forbidden:
@@ -98,7 +95,7 @@ async def delete_old_bot_messages():
         dm = await user.create_dm()
 
         deleted_count = 0
-        async for msg in dm.history(limit=18):
+        async for msg in dm.history(limit=6):
             if msg.author == client.user:
                 try:
                     await msg.delete()
