@@ -2,8 +2,8 @@ name: magic_night
 
 on:
   workflow_dispatch:
-    schedule:
-    - cron: '00 22 19 5 *'
+  schedule:
+    - cron: '05 22 19 5 *'
 
 jobs:
   run-bot:
