@@ -3,7 +3,7 @@ name: magic_night
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: '20 10 19 5 *'
+    - cron: '0 18 * * *'
 
 jobs:
   run-bot:

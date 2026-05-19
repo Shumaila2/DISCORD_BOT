@@ -218,7 +218,7 @@ async def on_ready():
         elif MODE == "send":
             timezone = pendulum.timezone("Asia/Karachi")
             now = pendulum.now(timezone)
-            target_time = pendulum.datetime(2025, 9, 5, 0, 0, 0, tz=timezone)
+            target_time = pendulum.datetime(2026, 5, 20, 0, 0, 0, tz=timezone)
             wait_time = (target_time - now).total_seconds()
 
             if wait_time > 0:
