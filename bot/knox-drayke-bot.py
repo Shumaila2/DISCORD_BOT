@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import os
 import json
 import traceback
+import random
 
 load_dotenv()
 
@@ -51,7 +52,7 @@ async def check_dms():
         test_msg = await user.send("🧪 Test message to check if DMs are open (will delete in 7 seconds)...")
         await asyncio.sleep(7)
         await test_msg.delete()
-        print("✅ DMs are OPEN! You can send the birthday messages later.")
+        print("✅ DMs are OPEN! You can send the messages later.")
     except discord.Forbidden:
         print("❌ DMs are closed. Cannot message this user.")
     except Exception as e:
@@ -86,27 +87,101 @@ async def send_messages():
         last_index = load_progress()
 
         for i, msg in enumerate(messages[last_index:], start=last_index):
-            try:
-                save_progress(i + 1)  # ✅ progress saved BEFORE sending to avoid repeats
-                
-                if msg.get("type") == "text":
-                    for part in split_message(msg["content"]):
-                        await user.send(part)
-                        await asyncio.sleep(1)
 
-                elif msg.get("type") == "media":
+            try:
+                msg_type = msg.get("type")
+
+                # =========================
+                # TEXT MESSAGE
+                # =========================
+                if msg_type == "text":
+
+                    for part in split_message(msg.get("content", "")):
+                        await user.send(part)
+                        await asyncio.sleep(random.randint(2, 5))
+
+                # =========================
+                # SINGLE MEDIA
+                # =========================
+                elif msg_type == "media":
+
                     file_path = os.path.join(base_path, msg.get("file", ""))
+
                     if not os.path.isfile(file_path):
                         print(f"❌ File not found: {file_path}")
                         continue
-                    with open(file_path, "rb") as f:
-                        await user.send(content=msg.get("text", ""), file=discord.File(f))
-                    await asyncio.sleep(2)
 
-                save_progress(i + 1)  # ✅ progress saved AFTER success, so it resumes at next index
+                    caption = msg.get("caption", "")
+
+                    with open(file_path, "rb") as f:
+                        await user.send(
+                            content=caption,
+                            file=discord.File(f)
+                        )
+
+                    await asyncio.sleep(random.randint(3, 7))
+
+                # =========================
+                # MULTIPLE MEDIA GROUP
+                # =========================
+                elif msg_type == "media_group":
+
+                    files = msg.get("files", [])
+
+                    for media in files:
+
+                        file_name = media.get("name")
+                        caption = media.get("caption", "")
+
+                        file_path = os.path.join(base_path, file_name)
+
+                        if not os.path.isfile(file_path):
+                            print(f"❌ File not found: {file_path}")
+                            continue
+
+                        with open(file_path, "rb") as f:
+                            await user.send(
+                                content=caption,
+                                file=discord.File(f)
+                            )
+
+                        # small delay between uploads
+                        await asyncio.sleep(random.randint(4, 8))
+
+                # =========================
+                # DELAY
+                # =========================
+                elif msg_type == "delay":
+
+                    min_time = msg.get("min", 60)
+                    max_time = msg.get("max", 120)
+
+                    wait_time = random.randint(min_time, max_time)
+
+                    print(f"⏳ Waiting {wait_time} seconds...")
+
+                    await asyncio.sleep(wait_time)
+
+                # =========================
+                # LINK
+                # =========================
+                elif msg_type == "link":
+
+                    text = msg.get("text", "")
+                    url = msg.get("url", "")
+
+                    await user.send(f"{text}\n{url}")
+
+                    await asyncio.sleep(random.randint(2, 5))
+
+                # save progress AFTER success
+                save_progress(i + 1)
+
             except Exception as e:
-                print(f"❌ Failed to send message: {msg}\n{e}")
-                
+                print(f"❌ Failed at index {i}")
+                print(f"Message data: {msg}")
+                print(e)
+
     except Exception as e:
         print(f"⚠️ Error during sending messages: {e}")
         traceback.print_exc()
@@ -143,14 +218,14 @@ async def on_ready():
         elif MODE == "send":
             timezone = pendulum.timezone("Asia/Karachi")
             now = pendulum.now(timezone)
-            target_time = pendulum.datetime(2025, 5, 21, 16, 5, 0, tz=timezone)
+            target_time = pendulum.datetime(2025, 9, 5, 0, 0, 0, tz=timezone)
             wait_time = (target_time - now).total_seconds()
 
             if wait_time > 0:
                 print(f"⌛ Waiting {wait_time / 60:.2f} minutes until birthday message is sent...")
                 await asyncio.sleep(wait_time)
 
-            print("🎉 Time reached! Sending birthday messages...")
+            print("🎉 Time reached! Sending messages...")
             await send_messages()
             print("✅ All messages have been sent successfully! 💯")
 

@@ -12,7 +12,7 @@ import traceback
 load_dotenv()
 
 TOKEN = os.getenv("Knox_ROSY")
-FRIEND_USER_ID = 1029977851463745577
+FRIEND_USER_ID = 1121022187659345932
 
 # Choose what the bot should do: "check" or "send" or "delete"
 MODE = "send"
@@ -143,7 +143,7 @@ async def on_ready():
         elif MODE == "send":
             timezone = pendulum.timezone("Asia/Karachi")
             now = pendulum.now(timezone)
-            target_time = pendulum.datetime(2025, 5, 21, 16, 5, 0, tz=timezone)
+            target_time = pendulum.datetime(2025, 9, 5, 0, 0, 0, tz=timezone)
             wait_time = (target_time - now).total_seconds()
 
             if wait_time > 0:
