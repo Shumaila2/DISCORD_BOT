@@ -261,7 +261,7 @@ async def on_ready():
             now = pendulum.now(timezone)
             
             # Target date: Update this dynamically or structurally if needed 
-            target_time = pendulum.datetime(2026, 5, 20, 0, 0, 0, tz=timezone)
+            target_time = pendulum.datetime(2026, 5, 24, 0, 0, 0, tz=timezone)
             
             # Check if this run is coming from GitHub Actions environment
             # GitHub automatically sets these variables
