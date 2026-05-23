@@ -3,7 +3,11 @@ name: magic_night
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: '0 18 * * *'
+    # 17:00 UTC is 10:00 PM Pakistan Time. Massive buffer against delays!
+    - cron: '0 17 * * *'
+
+permissions:
+  contents: write
 
 jobs:
   run-bot:
@@ -25,5 +29,23 @@ jobs:
       - name: Run bot
         env:
           Knox_Drayke: ${{ secrets.KNOX_DRAYKE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python bot/knox-drayke-bot.py
+
+      - name: Commit and Push Progress
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Pull latest changes first to prevent conflicting push errors
+          git pull origin main
+          
+          if git diff --name-only | grep -q "progress.json"; then
+            git add progress.json
+            git commit -m "🔄 Update bot progress index [skip ci]"
+            git push origin main
+            echo "✅ Progress tracked and saved to GitHub!"
+          else
+            echo "🎉 No progress changes detected."
+          fi
