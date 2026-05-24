@@ -9,7 +9,6 @@ import os
 import json
 import traceback
 import random
-import requests
 
 load_dotenv()
 
@@ -73,6 +72,18 @@ def load_progress():
 def save_progress(index):
     with open(PROGRESS_FILE, "w") as f:
         json.dump({"last_index": index}, f)
+        
+LAST_SENT_FILE = "last_sent.json"
+
+def load_last_sent():
+    if os.path.exists(LAST_SENT_FILE):
+        with open(LAST_SENT_FILE, "r") as f:
+            return json.load(f).get("date")
+    return None
+
+def save_last_sent(date):
+    with open(LAST_SENT_FILE, "w") as f:
+        json.dump({"date": date}, f)
         
 MAX_LENGTH = 2000
 
@@ -208,45 +219,6 @@ async def delete_old_bot_messages():
         print(f"⚠️ Error during message deletion: {e}")
         traceback.print_exc()
         
-async def check_duplicate_run():
-    """Checks if a manual workflow run happened today to prevent schedule duplication."""
-    github_token = os.getenv("GITHUB_TOKEN")
-    # GitHub automatically populates this variable in the action environment
-    repo = os.getenv("GITHUB_REPOSITORY") 
-    
-    if not github_token or not repo:
-        print("⚠️ GitHub environment variables missing. Proceeding without duplication check.")
-        return False
-
-    url = f"https://api.github.com/repos/{repo}/actions/runs"
-    headers = {
-        "Authorization": f"Bearer {github_token}",
-        "Accept": "application/vnd.github+v3+json"
-    }
-    
-    try:
-        # Fetch the last 10 workflow runs for this repository
-        response = requests.get(url, headers=headers, params={"per_page": 10})
-        if response.status_code == 200:
-            runs = response.json().get("workflow_runs", [])
-            timezone = pendulum.timezone("Asia/Karachi")
-            today = pendulum.now(timezone).to_date_string() # e.g., "2026-05-23"
-
-            for run in runs:
-                # We are only looking for manual runs ('workflow_dispatch')
-                if run.get("event") == "workflow_dispatch" and run.get("status") == "completed":
-                    # Convert GitHub's UTC completion time to local Pakistan time
-                    completed_at = pendulum.parse(run.get("updated_at")).in_tz(timezone)
-                    
-                    if completed_at.to_date_string() == today:
-                        print(f"🛑 Found a manual workflow run completed today at {completed_at.format('hh:mm A')}.")
-                        return True
-        else:
-            print(f"⚠️ Failed to fetch workflow history. Status code: {response.status_code}")
-    except Exception as e:
-        print(f"⚠️ Error checking duplicate runs: {e}")
-        
-    return False
 
 @client.event
 async def on_ready():
@@ -263,28 +235,27 @@ async def on_ready():
             # Target date: Update this dynamically or structurally if needed 
             target_time = pendulum.datetime(2026, 5, 24, 0, 0, 0, tz=timezone)
             
-            # Check if this run is coming from GitHub Actions environment
-            # GitHub automatically sets these variables
-            github_event = os.getenv("GITHUB_EVENT_NAME") 
-            
-            if github_event == "schedule":
-                print("📋 Workflow triggered by Schedule. Checking for manual overrides...")
-                # Call our validation step
-                if await check_duplicate_run():
-                    print("👋 Manual run already executed today. Cancelling this scheduled run to avoid spam.")
-                    await client.close()
-                    return
-                print("✅ No manual overrides found. Moving to countdown phase.")
-
             # Calculate remaining time safely
             wait_time = (target_time - now).total_seconds()
 
             if wait_time > 0:
                 print(f"⌛ Waiting {wait_time / 60:.2f} minutes until birthday message is sent...")
                 await asyncio.sleep(wait_time)
+                
+            today = pendulum.now(timezone).to_date_string()
+            last_sent = load_last_sent()
+            
+            if last_sent == today:
+                print("🛑 Messages already sent today. Exiting safely.")
+                await client.close()
+                return
 
             print("🎉 Time reached! Sending messages...")
             await send_messages()
+            save_last_sent(today)
+            
+            # Reset progress after successful completion
+            save_progress(0)
             print("✅ All messages have been sent successfully! 💯")
 
         elif MODE == "delete":
@@ -295,3 +266,4 @@ async def on_ready():
         traceback.print_exc()
 
     await client.close()
+client.run(TOKEN)
