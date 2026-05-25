@@ -233,7 +233,7 @@ async def on_ready():
             now = pendulum.now(timezone)
             
             # Target date: Update this dynamically or structurally if needed 
-            target_time = pendulum.datetime(2026, 5, 24, 0, 0, 0, tz=timezone)
+            target_time = pendulum.datetime(2026, 5, 26, 0, 0, 0, tz=timezone)
             
             # Calculate remaining time safely
             wait_time = (target_time - now).total_seconds()
