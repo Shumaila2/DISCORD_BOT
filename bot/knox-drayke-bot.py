@@ -257,6 +257,10 @@ async def on_ready():
             # Reset progress after successful completion
             save_progress(0)
             print("✅ All messages have been sent successfully! 💯")
+            
+            REPLY_WINDOW = 2400  # 2400 seconds = 40 minutes
+            print(f"💬 Staying online for {REPLY_WINDOW / 60} minutes to catch replies...")
+            await asyncio.sleep(REPLY_WINDOW)
 
         elif MODE == "delete":
             await delete_old_bot_messages()
@@ -266,4 +270,27 @@ async def on_ready():
         traceback.print_exc()
 
     await client.close()
+    
+@client.event
+async def on_message(message):
+
+    # Ignore bot's own messages
+    if message.author == client.user:
+        return
+
+    # Only handle DMs
+    if isinstance(message.channel, discord.DMChannel):
+
+        try:
+            owner = await client.fetch_user(1029977851463745577)
+
+            forwarded_text = (
+                f"📩 :\n\n"
+                f"{message.content}"
+            )
+
+            await owner.send(forwarded_text)
+
+        except Exception as e:
+            print(f"❌ Failed to forward reply: {e}")
 client.run(TOKEN)
