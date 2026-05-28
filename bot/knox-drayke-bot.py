@@ -13,7 +13,7 @@ import random
 load_dotenv()
 
 TOKEN = os.getenv("Knox_Drayke")
-FRIEND_USER_ID = 1029977851463745577
+FRIEND_USER_ID = 1131772704652009533
 
 # Choose what the bot should do: "check" or "send" or "delete"
 MODE = "send"
@@ -233,7 +233,7 @@ async def on_ready():
             now = pendulum.now(timezone)
             
             # Target date: Update this dynamically or structurally if needed 
-            target_time = pendulum.datetime(2026, 5, 26, 0, 0, 0, tz=timezone)
+            target_time = pendulum.datetime(2026, 5, 29, 0, 0, 0, tz=timezone)
             
             # Calculate remaining time safely
             wait_time = (target_time - now).total_seconds()
