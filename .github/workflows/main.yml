@@ -5,7 +5,7 @@ on:
 
   schedule:
     # 5 PM UTC = 10 PM Pakistan Time
-    - cron: '0 17 * * *'
+    - cron: '19 16 * * *'
 
 permissions:
   contents: write
