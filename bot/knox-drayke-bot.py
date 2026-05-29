@@ -13,7 +13,7 @@ import random
 load_dotenv()
 
 TOKEN = os.getenv("Knox_Drayke")
-FRIEND_USER_ID = 1131772704652009533
+FRIEND_USER_ID = 1029977851463745577
 
 # Choose what the bot should do: "check" or "send" or "delete"
 MODE = "send"
